@@ -27,7 +27,7 @@ public class Task3 {
         HashMap<String, Long> metaInfoText = new HashMap<String, Long>();
 
         while (matcher.find()) {
-            String word = matcher.group();
+            String word = matcher.group().toLowerCase();
             if (metaInfoText.containsKey(word)) {
                 zn = metaInfoText.get(word);
                 metaInfoText.put(word, zn + 1);
