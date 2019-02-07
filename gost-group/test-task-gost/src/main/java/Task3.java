@@ -25,8 +25,7 @@ public class Task3 {
 
         while (matcher.find()) {
             String word = matcher.group().toLowerCase();
-            if (metaInfoText.containsKey(word)) {
-                zn = metaInfoText.get(word);
+            if ((zn = metaInfoText.get(word)) != null) {
                 metaInfoText.put(word, zn + 1);
             } else {
                 metaInfoText.put(word, 1L);
