@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,7 +21,7 @@ public class Task3 {
         Matcher matcher = pattern.matcher(text);
 
         Long zn;
-        HashMap<String, Long> metaInfoText = new HashMap<String, Long>();
+        Map<String, Long> metaInfoText = new HashMap<String, Long>();
 
         while (matcher.find()) {
             String word = matcher.group().toLowerCase();
