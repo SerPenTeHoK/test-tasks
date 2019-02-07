@@ -1,18 +1,18 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static java.util.Comparator.reverseOrder;
 
 public class Task3 {
     /*
      В ТЗ не описано откуда поступает текст, т.к.
      тестовое задание будет поступать из строки.
      Также не указано:
-      1) Что делать с числами, буду считать словами;
-      2) Что делать c пунктуаций, буду заменять на пробел.
-      3) Что делать при выводе с повторяющися вхождением слов.
+      1) Что делать с числами;
+      2) Что делать c пунктуаций.
+      3) Как сортировать вывод, если совпадает частота вхождения.
     */
 
     public static void main(String[] args) {

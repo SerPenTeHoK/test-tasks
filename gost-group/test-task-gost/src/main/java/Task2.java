@@ -1,5 +1,4 @@
 import java.math.BigInteger;
-import java.util.HashMap;
 
 public class Task2 {
     // В ТЗ не описаны границы чисел, т.к.
