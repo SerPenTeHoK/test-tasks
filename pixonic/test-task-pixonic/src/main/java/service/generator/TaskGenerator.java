@@ -8,8 +8,8 @@ import java.util.List;
 
 @Slf4j
 public class TaskGenerator {
-    public static final int THREAD_COUNT = 20;
-    public static final int TASK_ON_THREAD = 300;
+    public static final int THREAD_COUNT = 4;
+    public static final int TASK_ON_THREAD = 30;
 
     List<Thread> threadList = new ArrayList<>();
 

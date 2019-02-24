@@ -29,6 +29,12 @@ public class SimulationWork extends Thread {
         for (int i = 0; i < countTask; i++) {
             if (Thread.interrupted())
                 break;
+            try {
+                Thread.sleep(50 * random.nextInt(10));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                break;
+            }
             LocalDateTime localDateTime = LocalDateTime.now();
             localDateTime = localDateTime.withSecond(FIXED_DELAY_SEC + random.nextInt(RANDOM_DELAY_SEC));
             TaskTypeSleep taskTypeSleep = new TaskTypeSleep(Thread.currentThread().getName(), i);

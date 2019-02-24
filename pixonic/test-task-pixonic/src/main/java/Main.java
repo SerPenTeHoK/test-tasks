@@ -18,9 +18,9 @@ public class Main {
         printToOutAndLog("Start!");
         WorkerMediatorSingletonImpl worker = WorkerMediatorSingletonImpl.getInstance();
         worker.startService();
-        Thread.sleep(START_WAIT);
+        Thread.sleep(setMaxTime(START_WAIT));
         TaskGenerator taskGenerator = new TaskGenerator();
-        Thread.sleep(START_WAIT);
+        Thread.sleep(setMaxTime(START_WAIT));
         try {
             taskGenerator.startGenerate(TaskGenerator.THREAD_COUNT, TaskGenerator.TASK_ON_THREAD);
             printToOutAndLog("Finish taskGenerator.startGenerate");
@@ -29,13 +29,14 @@ public class Main {
             log.error(e.toString());
         }
         printToOutAndLog("Wait work");
-        Thread.sleep(FINISH_WAIT);
-        printToOutAndLog("Task stopGenerate");
+        Thread.sleep(setMaxTime(FINISH_WAIT));
+        printToOutAndLog("Task stopGenerate tasks");
         taskGenerator.stopGenerate();
+        Thread.sleep(setMaxTime(FINISH_WAIT)*2);
         printToOutAndLog("Task WorkerMediatorSingletonImpl.stopService");
         worker.stopService();
-        printToOutAndLog("Wait stop service");
-        Thread.sleep(FINISH_WAIT);
+        printToOutAndLog("Wait stop worker service");
+        Thread.sleep(setMaxTime(FINISH_WAIT));
         if (log.isDebugEnabled()) {
             printToOutAndLog("Task FinishedWork.printQueue");
             FinishedWork.getInstance().printQueue();
@@ -54,5 +55,9 @@ public class Main {
         msg = ">>>>>>>>>>>>> Main LOG: " + msg;
         System.out.println(msg);
         log.debug(msg);
+    }
+
+    private static int setMaxTime(int delay){
+        return delay > 10000 ? 10000 : delay;
     }
 }

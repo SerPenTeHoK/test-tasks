@@ -79,28 +79,27 @@ public class FinishedWork {
     public boolean getMetaDataFromResult() {
         fillResultListIfNeed();
 
+        long countMoreZero = 0;
+        long avgDelay = 0;
         for (int i = 0; i < resultList.size(); i++) {
             FinishWorkElement element = resultList.get(i);
+            // ToDo понять ошибку: -999 ошибка вычисления наносекунд:
+            // 2019-02-25T02:15:51.999 и 2019-02-25T02:15:52
             long systemDelay = element.getFactSendToRunTime().getNano() -
                     element.getNeedStartTime().getNano();
             systemDelay = systemDelay / 1_000_000;
-            printToLogAndOut("System delay start(ms) = " + systemDelay);
+            printToLogAndOut("Num: " + element.getCounterNum() + " System delay start(ms) = " + systemDelay);
+            if(systemDelay > 0){
+                avgDelay += systemDelay;
+                countMoreZero++;
+            }
         }
 
-        OptionalDouble averageDelta = resultList.stream().mapToLong(
-                element -> {
-                    long systemDelay = element.getFactSendToRunTime().getNano() -
-                            element.getNeedStartTime().getNano();
-                    systemDelay = systemDelay / 1_000_000;
-                    printToLogAndOut("System delay start(ms) = " + systemDelay);
-                    return systemDelay;
-                }
-        ).average();
-
-        if (averageDelta.isPresent()) {
-            printToLogAndOut("Average Delta start: " + averageDelta.getAsDouble());
-        }
-
+        if(countMoreZero != 0)
+            printToLogAndOut("Average Delta start: " + avgDelay/countMoreZero);
+        else
+            printToLogAndOut("Haven't element > 0");
+        
         return true;
     }
 
