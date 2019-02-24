@@ -8,6 +8,9 @@ import java.util.List;
 
 @Slf4j
 public class TaskGenerator {
+    public static final int THREAD_COUNT = 20;
+    public static final int TASK_ON_THREAD = 300;
+
     List<Thread> threadList = new ArrayList<>();
 
     public TaskGenerator() {
@@ -15,13 +18,12 @@ public class TaskGenerator {
 
     public boolean startGenerate(int threadCount, int tasksOnThread) throws GeneratorException {
         if (threadCount < 1 || tasksOnThread < 1) {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(100);
             sb.append("incorrect params, must be >= 1")
                     .append(" threadCount=")
                     .append(threadCount)
                     .append(" tasksOnThread")
                     .append(tasksOnThread);
-            System.out.println(sb.length());
             throw new GeneratorException(sb.toString());
         }
         for (int i = 0; i < threadCount; i++) {

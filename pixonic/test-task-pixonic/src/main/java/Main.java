@@ -3,36 +3,56 @@ import service.checking.FinishedWork;
 import service.consumer.impl.WorkerMediatorSingletonImpl;
 import service.generator.TaskGenerator;
 import system.exception.GeneratorException;
+import system.exception.WorkMediatorAlreadyRunException;
 
 @Slf4j
 public class Main {
-    private static final int THREAD_COUNT = 2;
-    private static final int TASK_ON_THREAD = 100;
+    private static final int BASE_WAIT = 1000;
+    private static final int BASE_WAIT_THREAD = 400;
+    private static final int BASE_WAIT_TASK = 200;
+    private static final int START_WAIT = BASE_WAIT + BASE_WAIT_THREAD * TaskGenerator.THREAD_COUNT;
+    private static final int FINISH_WAIT = BASE_WAIT +
+            BASE_WAIT_TASK * TaskGenerator.TASK_ON_THREAD * TaskGenerator.THREAD_COUNT;
 
-    public static void main(String[] args) throws InterruptedException {
-        printToLog("Task Executer");
+    public static void main(String[] args) throws InterruptedException, WorkMediatorAlreadyRunException {
+        printToOutAndLog("Start!");
+        WorkerMediatorSingletonImpl worker = WorkerMediatorSingletonImpl.getInstance();
+        worker.startService();
+        Thread.sleep(START_WAIT);
         TaskGenerator taskGenerator = new TaskGenerator();
+        Thread.sleep(START_WAIT);
         try {
-            taskGenerator.startGenerate(THREAD_COUNT, TASK_ON_THREAD);
-            printToLog("Finish taskGenerator.startGenerate");
+            taskGenerator.startGenerate(TaskGenerator.THREAD_COUNT, TaskGenerator.TASK_ON_THREAD);
+            printToOutAndLog("Finish taskGenerator.startGenerate");
         } catch (GeneratorException e) {
             e.printStackTrace();
             log.error(e.toString());
         }
-        Thread.sleep(1000);
-        printToLog("Task stopGenerate");
+        printToOutAndLog("Wait work");
+        Thread.sleep(FINISH_WAIT);
+        printToOutAndLog("Task stopGenerate");
         taskGenerator.stopGenerate();
-        printToLog("Task WorkerMediatorSingletonImpl.stopService");
-        WorkerMediatorSingletonImpl.getInstance().stopService();
-        printToLog("Task FinishedWork.testWork");
-        FinishedWork.getInstance().testWork(THREAD_COUNT, TASK_ON_THREAD);
-        printToLog("Task FinishedWork.printQueue");
-        FinishedWork.getInstance().printQueue();
+        printToOutAndLog("Task WorkerMediatorSingletonImpl.stopService");
+        worker.stopService();
+        printToOutAndLog("Wait stop service");
+        Thread.sleep(FINISH_WAIT);
+        if (log.isDebugEnabled()) {
+            printToOutAndLog("Task FinishedWork.printQueue");
+            FinishedWork.getInstance().printQueue();
+            printToOutAndLog("Task FinishedWork.testWork");
+            if(FinishedWork.getInstance().testWork(TaskGenerator.THREAD_COUNT, TaskGenerator.TASK_ON_THREAD))
+                printToOutAndLog("All task finished");
+            else
+                printToOutAndLog("Not all task finished");
+            printToOutAndLog("MetaData:");
+            FinishedWork.getInstance().getMetaDataFromResult();
+            printToOutAndLog("Finish!");
+        }
     }
 
-    private static void printToLog(String msg) {
-        msg = ">>>>>>>>>>>>> Main LOG" + msg;
+    private static void printToOutAndLog(String msg) {
+        msg = ">>>>>>>>>>>>> Main LOG: " + msg;
         System.out.println(msg);
-        log.error(msg);
+        log.debug(msg);
     }
 }

@@ -1,22 +1,26 @@
 package service.checking;
 
 
-import java.util.Comparator;
-import java.util.Queue;
-import java.util.concurrent.PriorityBlockingQueue;
+import lombok.extern.slf4j.Slf4j;
+import service.consumer.impl.WorkerMediatorSingletonImpl;
+import service.generator.TaskGenerator;
 
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+@Slf4j
 public class FinishedWork {
     private static FinishedWork instance = new FinishedWork();
+    List<FinishWorkElement> resultList = null;
     private Queue finishQueue;
+    private AtomicBoolean isChanged = new AtomicBoolean(true);
 
     private FinishedWork() {
-        Comparator<FinishWorkElement> finishWorkElementComparator = new Comparator<FinishWorkElement>() {
-            @Override
-            public int compare(FinishWorkElement o1, FinishWorkElement o2) {
-                int result = o1.getThreadName().compareTo(o2.getThreadName());
-                return result != 0 ? result : Long.compare(o1.getOrder(), o2.getOrder());
-            }
-        };
+        Comparator<FinishWorkElement> finishWorkElementComparator = Comparator
+                .comparing(FinishWorkElement::getThreadName)
+                .thenComparing(FinishWorkElement::getOrderInThread);
         finishQueue = new PriorityBlockingQueue(100, finishWorkElementComparator);
     }
 
@@ -31,19 +35,93 @@ public class FinishedWork {
         return instance;
     }
 
+    public boolean addFinishElement(String threadName, int order,
+                                    LocalDateTime needStartTime,
+                                    LocalDateTime addingToQueueTime,
+                                    LocalDateTime factSendToRunTime,
+                                    long counter) {
+        finishQueue.add(new FinishWorkElement(threadName, order,
+                needStartTime,
+                addingToQueueTime,
+                factSendToRunTime,
+                counter));
+        this.isChanged.set(true);
+        return true;
+    }
+
     public boolean addFinishElement(String threadName, int order) {
         finishQueue.add(new FinishWorkElement(threadName, order));
+        this.isChanged.set(true);
         return true;
     }
 
     public void printQueue() {
-        finishQueue.forEach(item -> System.out.println(item));
+        fillResultListIfNeed();
+        resultList.forEach(finishWorkElement ->
+                printToLogAndOut(finishWorkElement.toString())
+        );
+        printToLogAndOut("Reject task: " + WorkerMediatorSingletonImpl.getInstance().getRejectByTimeCounter());
     }
 
     public boolean testWork(int threadCount, int tasksOnThread) {
-
-
-        return false;
+        fillResultListIfNeed();
+        if (resultList.size() != TaskGenerator.THREAD_COUNT * TaskGenerator.TASK_ON_THREAD) {
+            return false;
+        }
+        for (int i = 1; i < resultList.size(); i++) {
+            if (resultList.get(i).getCounterNum() - resultList.get(i - 1).getCounterNum() != 1) {
+                return false;
+            }
+        }
+        return true;
     }
 
+    public boolean getMetaDataFromResult() {
+        fillResultListIfNeed();
+
+        for (int i = 0; i < resultList.size(); i++) {
+            FinishWorkElement element = resultList.get(i);
+            long systemDelay = element.getFactSendToRunTime().getNano() -
+                    element.getNeedStartTime().getNano();
+            systemDelay = systemDelay / 1_000_000;
+            printToLogAndOut("System delay start(ms) = " + systemDelay);
+        }
+
+        OptionalDouble averageDelta = resultList.stream().mapToLong(
+                element -> {
+                    long systemDelay = element.getFactSendToRunTime().getNano() -
+                            element.getNeedStartTime().getNano();
+                    systemDelay = systemDelay / 1_000_000;
+                    printToLogAndOut("System delay start(ms) = " + systemDelay);
+                    return systemDelay;
+                }
+        ).average();
+
+        if (averageDelta.isPresent()) {
+            printToLogAndOut("Average Delta start: " + averageDelta.getAsDouble());
+        }
+
+        return true;
+    }
+
+    private void fillResultListIfNeed() {
+        if (resultList == null || isChanged.get()) {
+            resultList = fillArrayByQueue(finishQueue);
+        }
+    }
+
+    private void printToLogAndOut(String msg) {
+        msg = ">>> Finish LOG " + msg;
+        System.out.println(msg);
+        log.debug(msg);
+    }
+
+    private List<FinishWorkElement> fillArrayByQueue(Queue inQueue) {
+        List<FinishWorkElement> finishWorkElements = new ArrayList();
+        finishWorkElements.addAll(inQueue);
+        Comparator<FinishWorkElement> finishWorkElementComparatorByCounter = Comparator
+                .comparing(FinishWorkElement::getCounterNum);
+        finishWorkElements.sort(finishWorkElementComparatorByCounter);
+        return finishWorkElements;
+    }
 }
