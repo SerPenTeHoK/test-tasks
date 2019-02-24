@@ -4,11 +4,14 @@ public class Task1 {
         // это тестовое задание берём натуральные числа
 
         for (int i = 1; i <= 100; i++) {
-            if (i % 7 == 0 && i % 2 == 0) {
+            boolean is7 = i % 7 == 0;
+            boolean is2 = i % 2 == 0;
+
+            if (is7 && is2) {
                 System.out.println("TwoSeven");
-            } else if (i % 2 == 0) {
+            } else if (is2) {
                 System.out.println("Two");
-            } else if (i % 7 == 0) {
+            } else if (is7) {
                 System.out.println("Seven");
             } else {
                 System.out.println(i);
