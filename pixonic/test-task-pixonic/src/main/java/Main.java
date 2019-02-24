@@ -17,13 +17,14 @@ public class Main {
     public static void main(String[] args) throws InterruptedException, WorkMediatorAlreadyRunException {
         printToOutAndLog("Start!");
         WorkerMediatorSingletonImpl worker = WorkerMediatorSingletonImpl.getInstance();
+        printToOutAndLog("Start worker service");
         worker.startService();
         Thread.sleep(setMaxTime(START_WAIT));
         TaskGenerator taskGenerator = new TaskGenerator();
         Thread.sleep(setMaxTime(START_WAIT));
         try {
             taskGenerator.startGenerate(TaskGenerator.THREAD_COUNT, TaskGenerator.TASK_ON_THREAD);
-            printToOutAndLog("Finish taskGenerator.startGenerate");
+            printToOutAndLog("Finish taskGenerator startGenerate");
         } catch (GeneratorException e) {
             e.printStackTrace();
             log.error(e.toString());
@@ -33,14 +34,14 @@ public class Main {
         printToOutAndLog("Task stopGenerate tasks");
         taskGenerator.stopGenerate();
         Thread.sleep(setMaxTime(FINISH_WAIT)*2);
-        printToOutAndLog("Task WorkerMediatorSingletonImpl.stopService");
+        printToOutAndLog("Task WorkerMediatorSingletonImpl stopService");
         worker.stopService();
         printToOutAndLog("Wait stop worker service");
         Thread.sleep(setMaxTime(FINISH_WAIT));
         if (log.isDebugEnabled()) {
-            printToOutAndLog("Task FinishedWork.printQueue");
+            printToOutAndLog("Task FinishedWork printQueue");
             FinishedWork.getInstance().printQueue();
-            printToOutAndLog("Task FinishedWork.testWork");
+            printToOutAndLog("Task FinishedWork testWork");
             if(FinishedWork.getInstance().testWork(TaskGenerator.THREAD_COUNT, TaskGenerator.TASK_ON_THREAD))
                 printToOutAndLog("All task finished");
             else

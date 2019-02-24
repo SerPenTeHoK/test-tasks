@@ -100,37 +100,33 @@ public class WorkerMediatorSingletonImpl implements WorkerMediatorSingleton {
     // система перегружена loadFactor > N и надо выполнять заранее таски сделано: rnd.nextBoolean();
     private boolean internalStartService() {
         if (serviceThread == null) {
-            synchronized (WorkerMediatorSingletonImpl.class) {
-                if (serviceThread == null) {
-                    serviceThread = new Thread() {
-                        public void run() {
-                            while (true) {
-                                if (interrupted())
-                                    break;
-                                // ToDo подумать как бороться с перекладыванием из пустого в порожное
-                                // и не сломать первый пришёл тот и выполнится
-                                TaskToTime taskToTime = (TaskToTime) queue.poll();
-                                if (taskToTime != null) {
-                                    LocalDateTime taskTime = taskToTime.getLocalDateTime();
-                                    LocalDateTime nowTime = LocalDateTime.now();
-                                    boolean testTime = nowTime.isBefore(taskTime);
-                                    if (testTime) {
-                                        boolean loadFactor = rnd.nextBoolean();
-                                        if (loadFactor)
-                                            SendToRun(taskToTime);
-                                        else
-                                            queue.add(taskToTime);
-                                    } else {
-                                        SendToRun(taskToTime);
-                                    }
-                                }
+            serviceThread = new Thread() {
+                public void run() {
+                    while (true) {
+                        if (interrupted())
+                            break;
+                        // ToDo подумать как бороться с перекладыванием из пустого в порожное
+                        // и не сломать первый пришёл тот и выполнится
+                        TaskToTime taskToTime = (TaskToTime) queue.poll();
+                        if (taskToTime != null) {
+                            LocalDateTime taskTime = taskToTime.getLocalDateTime();
+                            LocalDateTime nowTime = LocalDateTime.now();
+                            boolean testTime = nowTime.isBefore(taskTime);
+                            if (testTime) {
+                                boolean loadFactor = false;//rnd.nextBoolean();
+                                if (loadFactor)
+                                    SendToRun(taskToTime);
+                                else
+                                    queue.add(taskToTime);
+                            } else {
+                                SendToRun(taskToTime);
                             }
                         }
-                    };
-                    serviceThread.start();
-                    isServiceWork = true;
+                    }
                 }
-            }
+            };
+            serviceThread.start();
+            isServiceWork = true;
         }
         return isServiceWork;
     }
