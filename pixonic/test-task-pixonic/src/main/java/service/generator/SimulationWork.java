@@ -7,6 +7,7 @@ import task.TaskTypeSleep;
 
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class SimulationWork extends Thread {
@@ -16,16 +17,28 @@ public class SimulationWork extends Thread {
 
     private final int countTask;
     private final WorkerMediatorSingletonImpl workerMediator = WorkerMediatorSingletonImpl.getInstance();
-
+    CountDownLatch startThread;
     private Random random = new Random();
 
-    public SimulationWork(int countTask) {
+    public SimulationWork(int countTask, CountDownLatch startThread) {
         super();
         this.countTask = countTask;
+        this.startThread = startThread;
     }
 
     @Override
     public void run() {
+        startThread.countDown();
+        try {
+            startThread.await();
+            if (log.isDebugEnabled()) {
+                System.out.println("Start test thread name:" + Thread.currentThread().getName() + " start time" + LocalDateTime.now());
+                log.debug("Start test thread name:" + Thread.currentThread().getName() + " start time" + LocalDateTime.now());
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         for (int i = 0; i < countTask; i++) {
             if (Thread.interrupted())
                 break;

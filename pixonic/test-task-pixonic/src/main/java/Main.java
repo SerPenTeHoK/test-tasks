@@ -5,6 +5,8 @@ import service.generator.TaskGenerator;
 import system.exception.GeneratorException;
 import system.exception.WorkMediatorAlreadyRunException;
 
+import java.util.concurrent.CountDownLatch;
+
 @Slf4j
 public class Main {
     private static final int BASE_WAIT = 1000;

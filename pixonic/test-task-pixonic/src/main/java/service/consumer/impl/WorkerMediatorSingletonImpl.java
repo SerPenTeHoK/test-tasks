@@ -96,42 +96,44 @@ public class WorkerMediatorSingletonImpl implements WorkerMediatorSingleton {
 
     // ToDo не бесконечный цикл, какую-нибудь алтернативу,
     // ToDo правильную проверку времени
-    // Предполагаю, что есть отедельный флаг, говорящий о том, что
-    // система перегружена loadFactor > N и надо выполнять заранее таски сделано: rnd.nextBoolean();
+    // Предполагаю, что есть отедельный флаг, который выставляется, когда система перегружена на осноании бэк лога
+    // сделано: rnd.nextBoolean();
     private boolean internalStartService() {
         if (serviceThread == null) {
-            serviceThread = new Thread() {
-                public void run() {
-                    while (true) {
-                        if (interrupted())
-                            break;
-                        // ToDo подумать как бороться с перекладыванием из пустого в порожное
-                        // и не сломать первый пришёл тот и выполнится
-                        TaskToTime taskToTime = (TaskToTime) queue.poll();
-                        if (taskToTime != null) {
-                            LocalDateTime taskTime = taskToTime.getLocalDateTime();
-                            LocalDateTime nowTime = LocalDateTime.now();
-                            boolean testTime = nowTime.isBefore(taskTime);
-                            if (testTime) {
-                                boolean loadFactor = false;//rnd.nextBoolean();
-                                if (loadFactor)
-                                    SendToRun(taskToTime);
-                                else
-                                    queue.add(taskToTime);
-                            } else {
-                                SendToRun(taskToTime);
+            synchronized (WorkerMediatorSingletonImpl.class) {
+                if (serviceThread == null) {
+                    serviceThread = new Thread() {
+                        public void run() {
+                            while (true) {
+                                if (interrupted())
+                                    break;
+                                TaskToTime taskToTime = (TaskToTime) queue.peek();
+                                if (taskToTime != null) {
+                                    boolean loadFactor = rnd.nextBoolean();
+                                    if (loadFactor) {
+                                        SendToRun((TaskToTime) queue.poll());
+                                        continue;
+                                    }
+                                    LocalDateTime taskTime = taskToTime.getLocalDateTime();
+                                    LocalDateTime nowTime = LocalDateTime.now();
+                                    boolean testTime = !nowTime.isBefore(taskTime);
+                                    if (testTime) {
+                                        SendToRun((TaskToTime) queue.poll());
+                                    }
+                                }
                             }
                         }
-                    }
+                    };
+                    serviceThread.start();
+                    isServiceWork = true;
                 }
-            };
-            serviceThread.start();
-            isServiceWork = true;
+            }
         }
         return isServiceWork;
     }
 
     //ToDo Ограничить максимальное количество потоков, а-ля ThreadPool, с верхней границей.
+    // или через семфор
     private void SendToRun(TaskToTime taskToTime) {
         new Thread(() -> {
             try {

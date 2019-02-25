@@ -5,11 +5,15 @@ import system.exception.GeneratorException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class TaskGenerator {
-    public static final int THREAD_COUNT = 4;
-    public static final int TASK_ON_THREAD = 30;
+    public static final int THREAD_COUNT = 10;
+    public static final int TASK_ON_THREAD = 20;
+
+    private static final CountDownLatch START_THREAD = new CountDownLatch(TaskGenerator.THREAD_COUNT);
+
 
     List<Thread> threadList = new ArrayList<>();
 
@@ -27,14 +31,16 @@ public class TaskGenerator {
             throw new GeneratorException(sb.toString());
         }
         for (int i = 0; i < threadCount; i++) {
-            threadList.add(new SimulationWork(tasksOnThread));
+            threadList.add(new SimulationWork(tasksOnThread, START_THREAD));
         }
-        threadList.parallelStream().forEach(thread -> thread.start());
+
+        //
+        threadList.forEach(thread -> thread.start());
         return true;
     }
 
     public boolean stopGenerate() {
-        threadList.parallelStream().forEach(thread -> thread.interrupt());
+        threadList.forEach(thread -> thread.interrupt());
         return true;
     }
 
