@@ -6,7 +6,10 @@ import service.consumer.impl.WorkerMediatorSingletonImpl;
 import service.generator.TaskGenerator;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -89,17 +92,17 @@ public class FinishedWork {
                     element.getNeedStartTime().getNano();
             systemDelay = systemDelay / 1_000_000;
             printToLogAndOut("Num: " + element.getCounterNum() + " System delay start(ms) = " + systemDelay);
-            if(systemDelay > 0){
+            if (systemDelay > 0) {
                 avgDelay += systemDelay;
                 countMoreZero++;
             }
         }
 
-        if(countMoreZero != 0)
-            printToLogAndOut("Average Delta start: " + avgDelay/countMoreZero);
+        if (countMoreZero != 0)
+            printToLogAndOut("Average Delta start: " + avgDelay / countMoreZero);
         else
             printToLogAndOut("Haven't element > 0");
-        
+
         return true;
     }
 

@@ -1,7 +1,6 @@
 package task;
 
 import lombok.Data;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import service.checking.FinishedWork;
 
@@ -33,12 +32,11 @@ public class TaskTypeSleep implements Callable {
     public Object call() throws Exception {
         int timeToSleep = new Random().nextInt(RANDOM_BOUND_TIME_TO_SLEEP) * BASE_TIME_TO_SLEEP;
         Thread.sleep(timeToSleep);
-        if(log.isDebugEnabled()){
+        if (log.isDebugEnabled()) {
             FinishedWork.getInstance().addFinishElement(threadName, workNum,
                     needStartTime, addingToQueueTime, factSendToRunTime,
                     counter);
-        }
-        else {
+        } else {
             FinishedWork.getInstance().addFinishElement(threadName, workNum);
         }
 

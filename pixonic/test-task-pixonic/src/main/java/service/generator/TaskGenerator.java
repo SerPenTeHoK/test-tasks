@@ -34,7 +34,6 @@ public class TaskGenerator {
             threadList.add(new SimulationWork(tasksOnThread, START_THREAD));
         }
 
-        //
         threadList.forEach(thread -> thread.start());
         return true;
     }

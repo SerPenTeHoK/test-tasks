@@ -16,7 +16,6 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
-// ToDo ограничение количества потоков
 public class WorkerMediatorSingletonImpl implements WorkerMediatorSingleton {
     private static volatile WorkerMediatorSingletonImpl instance = new WorkerMediatorSingletonImpl();
     private static volatile Thread serviceThread = null;
@@ -30,7 +29,7 @@ public class WorkerMediatorSingletonImpl implements WorkerMediatorSingleton {
         Comparator<TaskToTime> timeComparator = Comparator.
                 comparing(TaskToTime::getLocalDateTime)
                 .thenComparing(TaskToTime::getOrderTime);
-        queue = new PriorityBlockingQueue(100, timeComparator);
+        queue = new PriorityBlockingQueue(1000, timeComparator);
     }
 
     public static WorkerMediatorSingletonImpl getInstance() {
@@ -133,7 +132,7 @@ public class WorkerMediatorSingletonImpl implements WorkerMediatorSingleton {
     }
 
     //ToDo Ограничить максимальное количество потоков, а-ля ThreadPool, с верхней границей.
-    // или через семфор
+    // или через семафор
     private void SendToRun(TaskToTime taskToTime) {
         new Thread(() -> {
             try {
